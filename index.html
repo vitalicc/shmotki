@@ -12,9 +12,16 @@
     tbody tr:nth-child(even){background:#f8fafc}
     tbody tr:nth-child(odd){background:#e0f2fe}
     tbody td{padding:10px;font-size:14px}
+    tbody td:nth-child(2),
+    tbody td:nth-child(3),
+    tbody td:nth-child(4) {
+      text-align: center;
+    }
+
     .date{font-weight:600}
     .weekday{color:#475569}
-    .places{color:#0f172a}
+    .place1{color:#0f172a}
+    .place2{color:#0f172a}
     .empty{color:#94a3b8;font-style:italic}
   </style>
 </head>
@@ -24,7 +31,8 @@
       <tr>
         <th>Дата</th>
         <th>День недели</th>
-        <th>Место</th>
+        <th>Вес</th>
+        <th>Люкс</th>
       </tr>
     </thead>
     <tbody id="out"></tbody>
@@ -54,7 +62,7 @@
       return new Intl.DateTimeFormat('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'}).format(d);
     }
     function formatWeekday(d){
-      return new Intl.DateTimeFormat('ru-RU',{weekday:'long'}).format(d);
+      return new Intl.DateTimeFormat('ru-RU',{weekday:'short'}).format(d);
     }
 
     function daysBetweenUTC(a,b){
@@ -76,7 +84,7 @@
       for(let i=0;i<14;i++){
         const dayDateUTC=new Date(Date.UTC(today.getUTCFullYear(),today.getUTCMonth(),today.getUTCDate()+i));
         const idx=(offset+i)%14;
-        const place=pattern[idx]||'';
+        const places=pattern[idx].split('/').map(p=>p.trim()).filter(Boolean);
 
         const tr=document.createElement('tr');
         const tdDate=document.createElement('td');
@@ -87,14 +95,20 @@
         tdWeek.className='weekday';
         tdWeek.textContent=formatWeekday(dayDateUTC);
 
-        const tdPlace=document.createElement('td');
-        tdPlace.className='places';
-        tdPlace.textContent=place||'—';
-        if(!place) tdPlace.classList.add('empty');
+        const tdPlace1=document.createElement('td');
+        tdPlace1.className='place1';
+        tdPlace1.textContent=places[0]||'—';
+        if(!places[0]) tdPlace1.classList.add('empty');
+
+        const tdPlace2=document.createElement('td');
+        tdPlace2.className='place2';
+        tdPlace2.textContent=places[1]||'—';
+        if(!places[1]) tdPlace2.classList.add('empty');
 
         tr.appendChild(tdDate);
         tr.appendChild(tdWeek);
-        tr.appendChild(tdPlace);
+        tr.appendChild(tdPlace1);
+        tr.appendChild(tdPlace2);
         out.appendChild(tr);
       }
     }
