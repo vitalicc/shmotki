@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>График</title>
+  <style>
+    body{margin:0;padding:20px;background:linear-gradient(135deg,#f0f9ff,#cbebff);font-family:Segoe UI,Arial,sans-serif;color:#1e293b}
+    table{width:100%;border-collapse:collapse;overflow:hidden;border-radius:16px;box-shadow:0 6px 20px rgba(0,0,0,0.1)}
+    thead{background:#0ea5e9;color:#fff}
+    thead th{padding:12px;font-weight:600;font-size:14px;text-align:left}
+    tbody tr:nth-child(even){background:#f8fafc}
+    tbody tr:nth-child(odd){background:#e0f2fe}
+    tbody td{padding:10px;font-size:14px}
+    .date{font-weight:600}
+    .weekday{color:#475569}
+    .places{color:#0f172a}
+    .empty{color:#94a3b8;font-style:italic}
+  </style>
+</head>
+<body>
+  <table>
+    <thead>
+      <tr>
+        <th>Дата</th>
+        <th>День недели</th>
+        <th>Место</th>
+      </tr>
+    </thead>
+    <tbody id="out"></tbody>
+  </table>
+
+  <script>
+    const pattern = [
+      '',
+      'Молодежный',
+      '',
+      'Автовокзал',
+      'Раковка',
+      'Халаменюка / Автовокзал',
+      'Евромед / Раковка',
+      'Халаменюка',
+      'Киевская / Евромед',
+      '',
+      'Свободы / Киевская',
+      '',
+      'Свободы',
+      'Молодежный'
+    ];
+
+    if (pattern.length !== 14) console.warn('Ожидается 14 дней в шаблоне, сейчас:', pattern.length);
+
+    function formatDate(d){
+      return new Intl.DateTimeFormat('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'}).format(d);
+    }
+    function formatWeekday(d){
+      return new Intl.DateTimeFormat('ru-RU',{weekday:'long'}).format(d);
+    }
+
+    function daysBetweenUTC(a,b){
+      const msPerDay=86400000;
+      const da=Date.UTC(a.getUTCFullYear(),a.getUTCMonth(),a.getUTCDate());
+      const db=Date.UTC(b.getUTCFullYear(),b.getUTCMonth(),b.getUTCDate());
+      return Math.round((db-da)/msPerDay);
+    }
+
+    function render(){
+      const out=document.getElementById('out');
+      out.innerHTML='';
+      const anchor=new Date('2025-02-03T00:00:00Z');
+      const now=new Date();
+      const parts=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Kyiv',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(now);
+      const today=new Date(Date.UTC(parts.find(p=>p.type==='year').value,parts.find(p=>p.type==='month').value-1,parts.find(p=>p.type==='day').value));
+      const offset=((daysBetweenUTC(anchor,today)%14)+14)%14;
+
+      for(let i=0;i<14;i++){
+        const dayDateUTC=new Date(Date.UTC(today.getUTCFullYear(),today.getUTCMonth(),today.getUTCDate()+i));
+        const idx=(offset+i)%14;
+        const place=pattern[idx]||'';
+
+        const tr=document.createElement('tr');
+        const tdDate=document.createElement('td');
+        tdDate.className='date';
+        tdDate.textContent=formatDate(dayDateUTC);
+
+        const tdWeek=document.createElement('td');
+        tdWeek.className='weekday';
+        tdWeek.textContent=formatWeekday(dayDateUTC);
+
+        const tdPlace=document.createElement('td');
+        tdPlace.className='places';
+        tdPlace.textContent=place||'—';
+        if(!place) tdPlace.classList.add('empty');
+
+        tr.appendChild(tdDate);
+        tr.appendChild(tdWeek);
+        tr.appendChild(tdPlace);
+        out.appendChild(tr);
+      }
+    }
+
+    render();
+  </script>
+</body>
+</html>
